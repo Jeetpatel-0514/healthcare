@@ -6,20 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <style>
+        /* Global styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #e6f7e6;
+            /* Light green background */
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-
-            /* ✅ FIXED PATH */
             background-image: url("/loginbackground.jpg");
-            background-size: cover;
-            background-position: center;
         }
 
         .container {
@@ -29,13 +27,16 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 80%;
             max-width: 400px;
+            /* Narrower for a single form */
         }
 
         .form-section {
             padding: 20px;
             border: 2px solid #007BFF;
+            /* Blue border */
             border-radius: 8px;
             background-color: #f0f8ff;
+            /* Light blue background for forms */
         }
 
         h1 {
@@ -45,6 +46,7 @@
 
         h2 {
             color: #28A745;
+            /* Green for headings */
             text-align: center;
         }
 
@@ -52,6 +54,7 @@
             display: block;
             margin: 10px 0 5px;
             color: #007BFF;
+            /* Blue for labels */
         }
 
         input[type="text"],
@@ -60,6 +63,7 @@
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #28A745;
+            /* Green border for inputs */
             border-radius: 4px;
             box-sizing: border-box;
         }
@@ -68,18 +72,22 @@
             width: 100%;
             padding: 10px;
             background-color: #007BFF;
+            /* Blue button background */
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
             background-color: #0056b3;
+            /* Darker blue on hover */
         }
 
         .success-message {
             color: #28A745;
+            /* Green for success messages */
             text-align: center;
             margin-top: 10px;
         }
@@ -91,12 +99,11 @@
         <div class="form-section">
             <h1>Smart Healthcare</h1>
             <h2>Login</h2>
-
             <form id="loginForm">
-                <label>Username or Email:</label>
+                <label for="loginUsername">Username or Email:</label>
                 <input type="text" id="loginUsername" required>
 
-                <label>Password:</label>
+                <label for="loginPassword">Password:</label>
                 <input type="password" id="loginPassword" required>
 
                 <button type="submit">Login</button>
@@ -108,11 +115,10 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async function (event) {
             event.preventDefault();
-
             const identifier = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
-            const msgEl = document.getElementById('loginMessage');
 
+            const msgEl = document.getElementById('loginMessage');
             msgEl.innerText = '';
 
             if (!identifier || !password) {
@@ -127,30 +133,21 @@
                     credentials: 'include',
                     body: JSON.stringify({ identifier, password })
                 });
-
                 const data = await res.json();
-
                 if (res.ok) {
                     msgEl.style.color = '#28A745';
                     msgEl.innerText = 'Login successful! Redirecting...';
-
-                    /* ✅ small improvement */
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 800);
-
+                    setTimeout(() => { window.location.href = '/index.html'; }, 800);
                 } else {
                     msgEl.style.color = 'red';
                     msgEl.innerText = data.error || 'Login failed';
                 }
-
             } catch (err) {
                 msgEl.style.color = 'red';
                 msgEl.innerText = 'Network error';
             }
         });
     </script>
-
 </body>
 
 </html>
