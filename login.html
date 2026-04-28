@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <style>
-        /* Global styles */
         body {
             font-family: Arial, sans-serif;
-            background-color: #e6f7e6; /* Light green background */
+            background-color: #e6f7e6;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-image: url("loginbackground.jpg");
+
+            /* ✅ FIXED PATH */
+            background-image: url("/loginbackground.jpg");
+            background-size: cover;
+            background-position: center;
         }
 
         .container {
@@ -24,14 +28,14 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 80%;
-            max-width: 400px;  /* Narrower for a single form */
+            max-width: 400px;
         }
 
         .form-section {
             padding: 20px;
-            border: 2px solid #007BFF; /* Blue border */
+            border: 2px solid #007BFF;
             border-radius: 8px;
-            background-color: #f0f8ff; /* Light blue background for forms */
+            background-color: #f0f8ff;
         }
 
         h1 {
@@ -40,14 +44,14 @@
         }
 
         h2 {
-            color: #28A745; /* Green for headings */
+            color: #28A745;
             text-align: center;
         }
 
         label {
             display: block;
             margin: 10px 0 5px;
-            color: #007BFF; /* Blue for labels */
+            color: #007BFF;
         }
 
         input[type="text"],
@@ -55,7 +59,7 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid #28A745; /* Green border for inputs */
+            border: 1px solid #28A745;
             border-radius: 4px;
             box-sizing: border-box;
         }
@@ -63,37 +67,38 @@
         button {
             width: 100%;
             padding: 10px;
-            background-color: #007BFF; /* Blue button background */
+            background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
+            background-color: #0056b3;
         }
 
         .success-message {
-            color: #28A745; /* Green for success messages */
+            color: #28A745;
             text-align: center;
             margin-top: 10px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="form-section">
             <h1>Smart Healthcare</h1>
             <h2>Login</h2>
+
             <form id="loginForm">
-                <label for="loginUsername">Username or Email:</label>
+                <label>Username or Email:</label>
                 <input type="text" id="loginUsername" required>
-                
-                <label for="loginPassword">Password:</label>
+
+                <label>Password:</label>
                 <input type="password" id="loginPassword" required>
-                
+
                 <button type="submit">Login</button>
                 <div id="loginMessage" class="success-message"></div>
             </form>
@@ -101,12 +106,13 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        document.getElementById('loginForm').addEventListener('submit', async function (event) {
             event.preventDefault();
+
             const identifier = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
-
             const msgEl = document.getElementById('loginMessage');
+
             msgEl.innerText = '';
 
             if (!identifier || !password) {
@@ -121,20 +127,30 @@
                     credentials: 'include',
                     body: JSON.stringify({ identifier, password })
                 });
+
                 const data = await res.json();
+
                 if (res.ok) {
                     msgEl.style.color = '#28A745';
                     msgEl.innerText = 'Login successful! Redirecting...';
-                    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+
+                    /* ✅ small improvement */
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 800);
+
                 } else {
                     msgEl.style.color = 'red';
                     msgEl.innerText = data.error || 'Login failed';
                 }
+
             } catch (err) {
                 msgEl.style.color = 'red';
                 msgEl.innerText = 'Network error';
             }
         });
     </script>
+
 </body>
+
 </html>
