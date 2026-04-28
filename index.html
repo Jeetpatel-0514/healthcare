@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Healthcare Assistant - Your Health Companion</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for Health Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-heartbeat
+                "></i>
+                <span>Smart Healthcare</span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#doctors" class="nav-link">Doctors</a></li>
+                <li><a href="#appointments" class="nav-link">Appointments</a></li>
+                <li><a href="my_appointments.html" class="nav-link">My Appointments</a></li>
+                <li><a href="#health-monitor" class="nav-link">Health Monitor</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Your Personal <span class="highlight">Healthcare Assistant</span></h1>
+                <p class="hero-subtitle">Get instant medical advice, book appointments with top doctors, and monitor your health - all in one place</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="openChatbot()">
+                        <i class="fas fa-comments"></i> Chat with Assistant
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('doctors')">
+                        <i class="fas fa-user-md"></i> Find Doctors
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-illustration">
+                    <i class="fas fa-hospital-user"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Key Features</h2>
+                <p class="section-subtitle">Comprehensive healthcare solutions at your fingertips</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Chatbot Assistant</h3>
+                    <p>Get instant answers to your health questions with our intelligent chatbot powered by medical knowledge</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Easy Appointment Booking</h3>
+                    <p>Schedule appointments with top doctors in your area with just a few clicks</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Health Monitoring</h3>
+                    <p>Track your vital signs and get personalized health insights based on your data</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3>Expert Doctors</h3>
+                    <p>Access a network of certified healthcare professionals across multiple specialties</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <h3>Clinic Finder</h3>
+                    <p>Find nearby clinics and hospitals based on your symptoms and location</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Your health data is encrypted and protected with industry-standard security</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctors & Clinics Section -->
+    <section id="doctors" class="doctors">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Expert Doctors</h2>
+                <p class="section-subtitle">Certified healthcare professionals ready to help you</p>
+            </div>
+            
+            <!-- Specialty Filter -->
+            <div class="specialty-filter">
+                <button class="filter-btn active" data-specialty="all">All Specialties</button>
+                <button class="filter-btn" data-specialty="general">General Physician</button>
+                <button class="filter-btn" data-specialty="cardiology">Cardiology</button>
+                <button class="filter-btn" data-specialty="pediatrics">Pediatrics</button>
+                <button class="filter-btn" data-specialty="dermatology">Dermatology</button>
+            </div>
+
+            <div class="doctors-grid" id="doctorsGrid">
+                <!-- Doctor cards will be dynamically generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Appointment Calendar Section -->
+    <section id="appointments" class="appointments">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Book an Appointment</h2>
+                <p class="section-subtitle">Choose your preferred date and time</p>
+            </div>
+            <div class="appointment-container">
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" id="prevMonth">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h3 id="currentMonth">Month Year</h3>
+                        <button class="calendar-nav" id="nextMonth">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-days">
+                        <div class="day-label">Sun</div>
+                        <div class="day-label">Mon</div>
+                        <div class="day-label">Tue</div>
+                        <div class="day-label">Wed</div>
+                        <div class="day-label">Thu</div>
+                        <div class="day-label">Fri</div>
+                        <div class="day-label">Sat</div>
+                    </div>
+                    <div class="calendar-dates" id="calendarDates">
+                        <!-- Calendar dates will be generated by JavaScript -->
+                    </div>
+                </div>
+                <div class="booking-form">
+                    <h3>Appointment Details</h3>
+                    <form id="appointmentForm">
+                        <div class="form-group">
+                            <label for="patientName">Full Name</label>
+                            <input type="text" id="patientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientEmail">Email</label>
+                            <input type="email" id="patientEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientPhone">Phone Number</label>
+                            <input type="tel" id="patientPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="doctorSelect">Select Doctor</label>
+                            <select id="doctorSelect" required>
+                                <option value="">Choose a doctor</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeSlot">Preferred Time</label>
+                            <select id="timeSlot" required>
+                                <option value="">Select a time slot</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="12:00 PM">12:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointmentReason">Reason for Visit</label>
+                            <textarea id="appointmentReason" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-check-circle"></i> Confirm Appointment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Health Monitoring Section -->
+    <section id="health-monitor" class="health-monitor">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Health Monitoring Dashboard</h2>
+                <p class="section-subtitle">Track your vital signs and get instant health insights</p>
+            </div>
+            <div class="health-dashboard">
+                <div class="health-input-section">
+                    <h3>Enter Your Health Data</h3>
+                    <form id="healthForm">
+                        <div class="form-group">
+                            <label for="temperature">Body Temperature (°F)</label>
+                            <input type="number" id="temperature" step="0.1" placeholder="98.6">
+                            <small>Normal range: 97.0 - 99.0°F</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressureSys">Blood Pressure - Systolic (mmHg)</label>
+                            <input type="number" id="bloodPressureSys" placeholder="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressureDia">Blood Pressure - Diastolic (mmHg)</label>
+                            <input type="number" id="bloodPressureDia" placeholder="80">
+                            <small>Normal range: 90-120 / 60-80 mmHg</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="heartRate">Heart Rate (bpm)</label>
+                            <input type="number" id="heartRate" placeholder="72">
+                            <small>Normal range: 60-100 bpm</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodSugar">Blood Sugar Level (mg/dL)</label>
+                            <input type="number" id="bloodSugar" placeholder="100">
+                            <small>Normal fasting: 70-100 mg/dL</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="oxygenLevel">Oxygen Saturation (%)</label>
+                            <input type="number" id="oxygenLevel" step="0.1" placeholder="98">
+                            <small>Normal range: 95-100%</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-chart-line"></i> Analyze Health Data
+                        </button>
+                    </form>
+                </div>
+                <div class="health-results-section">
+                    <h3>Health Status Report</h3>
+                    <div id="healthResults" class="health-results">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>Enter your health data to see your personalized health report</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-header" style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1.5rem; color: var(--dark-gray); font-weight: 700;">Health Trends</h3>
+                <button type="button" class="btn btn-secondary" onclick="renderHealthCharts()" style="padding: 8px 16px; font-size: 0.9rem;">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+            <div class="health-charts-container">
+                <div class="chart-card">
+                    <h4>Body Temperature</h4>
+                    <canvas id="tempChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Blood Pressure</h4>
+                    <canvas id="bpChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Heart Rate</h4>
+                    <canvas id="hrChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Blood Sugar</h4>
+                    <canvas id="bsChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Oxygen Saturation</h4>
+                    <canvas id="o2Chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Get in Touch</h2>
+                <p class="section-subtitle">Have questions? We're here to help</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4>Address</h4>
+                            <p>123 Healthcare Avenue, Medical District<br>Surat, 395005</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+91 9106954885<br>Available 24/7</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4>Email</h4>
+                            <p>support@smarthealthcare.com<br>info@smarthealthcare.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-section">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="Subject" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea rows="5" placeholder="Your Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-heartbeat"></i> Smart Healthcare</h3>
+                    <p>Your trusted partner in healthcare. We provide comprehensive medical services and support to help you live a healthier life.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#doctors">Doctors</a></li>
+                        <li><a href="#appointments">Appointments</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#health-monitor">Health Monitoring</a></li>
+                        <li><a href="#" onclick="openChatbot()">AI Chatbot</a></li>
+                        <li><a href="#doctors">Find Doctors</a></li>
+                        <li><a href="#contact">Contact Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +91 9106954885 </li>
+                        <li><i class="fas fa-envelope"></i> support@smarthealthcare.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Surat, 395005</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Smart Healthcare Assistant. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+        <div class="chatbot-header">
+            <div class="chatbot-header-content">
+                <i class="fas fa-robot"></i>
+                <div>
+                    <h4>Healthcare Assistant</h4>
+                    <span class="status-indicator">Online</span>
+                </div>
+            </div>
+            <button class="chatbot-close" onclick="closeChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="message bot-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>Hello! I'm your healthcare assistant. How can I help you today?</p>
+                    <div class="quick-replies">
+                        <button class="quick-reply" onclick="sendQuickReply('I have a fever')">I have a fever</button>
+                        <button class="quick-reply" onclick="sendQuickReply('Book appointment')">Book appointment</button>
+                        <button class="quick-reply" onclick="sendQuickReply('Find doctor')">Find doctor</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()">
+        <i class="fas fa-comments"></i>
+        <span class="notification-badge">1</span>
+    </button>
+
+    <!-- Modal for Appointment Confirmation -->
+    <div class="modal" id="appointmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Appointment Confirmed!</h3>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Appointment details will be inserted here -->
+            </div>
+            <button class="btn btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-heartbeat"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

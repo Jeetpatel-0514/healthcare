@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments - Smart Healthcare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-heartbeat"></i>
+                <span>Smart Healthcare</span>
+            </div>
+            <ul id="navMenu" class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="my_appointments.html" class="nav-link active">My Appointments</a></li>
+                <li><a href="login.html" class="nav-link">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="appointments">
+        <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">My Appointments</h2>
+            <p class="section-subtitle">View your upcoming and past appointments</p>
+        </div>
+
+        <div id="appointmentsList" class="appointments-list">
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <p>Loading your appointments...</p>
+            </div>
+        </div>
+            </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>
+        async function fetchAppointments() {
+            try {
+                const res = await fetch('/api/appointments', { credentials: 'include' });
+                if (res.status === 401) {
+                    // not logged in
+                    alert('Please log in to view your appointments.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to load');
+
+                const appts = await res.json();
+                renderAppointments(appts);
+            } catch (err) {
+                const container = document.getElementById('appointmentsList');
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Unable to load appointments.</p></div>`;
+            }
+        }
+
+        function renderAppointments(appts) {
+            const container = document.getElementById('appointmentsList');
+            if (!appts || appts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>You have no appointments yet.</p>
+                        <p><a href="index.html#appointments">Book an appointment</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = appts.map(a => `
+                <div class="appointment-card" data-id="${a.id}" id="appt-${a.id}">
+                    <div class="appointment-header">
+                        <h4>${a.doctor}</h4>
+                        <span class="appointment-date">${new Date(a.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} — ${a.time}</span>
+                    </div>
+                    <div class="appointment-body">
+                        <p><strong>Patient:</strong> ${a.patient_name}</p>
+                        <p><strong>Email:</strong> ${a.email}</p>
+                        <p><strong>Phone:</strong> ${a.phone || '—'}</p>
+                        <p><strong>Reason:</strong> ${a.reason || '—'}</p>
+                    </div>
+                    <div class="appointment-footer">
+                        <small>Booked on ${a.created_at}</small>
+                        <button class="btn btn-danger" onclick="cancelAppointment(${a.id})">Cancel</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function cancelAppointment(id) {
+            if (!confirm('Are you sure you want to cancel this appointment?')) return;
+            try {
+                const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) {
+                    const el = document.getElementById('appt-' + id);
+                    if (el) el.remove();
+                    // if list becomes empty, re-render
+                    const container = document.getElementById('appointmentsList');
+                    if (!container.querySelector('.appointment-card')) {
+                        container.innerHTML = `\n                    <div class="empty-state">\n                        <i class="fas fa-calendar-check"></i>\n                        <p>You have no appointments yet.</p>\n                        <p><a href="index.html#appointments">Book an appointment</a></p>\n                    </div>\n                `;
+                    }
+                } else if (res.status === 401) {
+                    alert('Please log in to manage appointments.');
+                    window.location.href = 'login.html';
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert(err.error || 'Failed to cancel appointment');
+                }
+            } catch (e) {
+                alert('Network error');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchAppointments);
+    </script>
+</body>
+</html>
