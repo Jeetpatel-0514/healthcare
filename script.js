@@ -455,9 +455,10 @@ async function sendMessage() {
     addTypingIndicator(typingId);
     
     try {
-        const response = await fetch('http://localhost:3000/api/chat', {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ message })
         });
         
@@ -490,9 +491,10 @@ async function sendQuickReply(message) {
     addTypingIndicator(typingId);
     
     try {
-        const response = await fetch('http://localhost:3000/api/chat', {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ message })
         });
         
