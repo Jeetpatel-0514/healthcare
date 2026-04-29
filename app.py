@@ -14,6 +14,9 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL not set")
+
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, supports_credentials=True)
 app.secret_key = os.environ.get('FLASK_SECRET', 'dev-secret')
