@@ -12,15 +12,18 @@ from google.genai import types
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgres://6290082d19f097b7c5e25851ffa205042f661c902ce28788fefbf1320ef402e8:sk_LJ-_367XsS-G5qTJbu3Df@db.prisma.io:5432/postgres?sslmode=require')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, supports_credentials=True)
 app.secret_key = os.environ.get('FLASK_SECRET', 'dev-secret')
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    return conn
+    return psycopg2.connect(
+        DATABASE_URL,
+        sslmode='require',
+        cursor_factory=RealDictCursor
+    )
 
 def init_db():
     conn = get_db()
