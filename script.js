@@ -336,6 +336,12 @@ function handleAppointmentSubmit(e) {
     const time = document.getElementById('timeSlot').value;
     const reason = document.getElementById('appointmentReason').value;
 
+    // Validate phone number
+    if (!/^\d{10}$/.test(phone)) {
+        alert("Please enter exactly 10 digits for your mobile number.");
+        return;
+    }
+
     // Show loading
     showLoading();
 
