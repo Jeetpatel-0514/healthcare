@@ -63,22 +63,18 @@ function updateAuthUI() {
         // Add profile and logout links
         const profileLi = document.createElement('li');
         profileLi.className = 'auth-link';
-        profileLi.innerHTML = `<a href="#" class="nav-link">${currentUser.username}</a>`;
+        profileLi.innerHTML = `<a href="user_profile.html" class="nav-link" title="View Profile"><i class="fas fa-user-circle"></i> ${currentUser.username}</a>`;
         const logoutLi = document.createElement('li');
         logoutLi.className = 'auth-link';
-        logoutLi.innerHTML = `<a href="#" id="logoutLink" class="nav-link">LOGOUT</a>`;
+        logoutLi.innerHTML = `<a href="#" id="logoutLink" class="nav-link"><i class="fas fa-sign-out-alt"></i> LOGOUT</a>`;
         navMenu.appendChild(profileLi);
         navMenu.appendChild(logoutLi);
     } else {
-        // Add login / signup links
+        // Add unified login / signup link
         const loginLi = document.createElement('li');
         loginLi.className = 'auth-link';
-        loginLi.innerHTML = `<a href="login.html" class="nav-link">LOGIN</a>`;
-        const signupLi = document.createElement('li');
-        signupLi.className = 'auth-link';
-        signupLi.innerHTML = `<a href="signup.html" class="nav-link">SIGN IN</a>`;
+        loginLi.innerHTML = `<a href="login.html" class="nav-link"><i class="fas fa-sign-in-alt"></i> LOGIN / SIGN UP</a>`;
         navMenu.appendChild(loginLi);
-        navMenu.appendChild(signupLi);
     }
 }
 
@@ -156,16 +152,38 @@ function scrollToSection(sectionId) {
 
 // ========== Doctor Functions ==========
 async function initializeDoctors() {
+    // Hardcoded fallback data in case the backend API is not running
+    const fallbackDoctors = [
+        { name: "Dr. Dhaval Pandya", specialty: "general", specialtyName: "General Physician", clinic: "Impulse Hospital & ICU", rating: 4.9, experience: "18 years", image: "dr.dhaval.webp" },
+        { name: "Dr. Gopal Shah", specialty: "cardiology", specialtyName: "Cardiology", clinic: "Heart Care Hospital", rating: 4.9, experience: "20 years", image: "male_doctor.png" },
+        { name: "Dr. Apoorva Shah", specialty: "pediatrics", specialtyName: "Pediatrics", clinic: "Children's Health Clinic", rating: 4.7, experience: "12 years", image: "male_doctor.png" },
+        { name: "Dr. Dipak Patel", specialty: "dermatology", specialtyName: "Dermatology", clinic: "Skin Care Institute", rating: 4.6, experience: "10 years", image: "male_doctor.png" },
+        { name: "Dr. Rajnikant Dave", specialty: "general", specialtyName: "General Physician", clinic: "Community Health Center", rating: 4.8, experience: "18 years", image: "male_doctor.png" },
+        { name: "Dr. Payal Joshi", specialty: "cardiology", specialtyName: "Cardiology", clinic: "Advanced Cardiac Care", rating: 4.9, experience: "25 years", image: "female_doctor.png" },
+        { name: "Dr. Kavita Patel", specialty: "pediatrics", specialtyName: "Pediatrics", clinic: "Kids First Medical", rating: 4.8, experience: "14 years", image: "female_doctor.png" },
+        { name: "Dr. Rajesh Patel", specialty: "dermatology", specialtyName: "Dermatology", clinic: "Derma Wellness Center", rating: 4.7, experience: "16 years", image: "male_doctor.png" }
+    ];
+
     try {
         const res = await fetch('/api/doctors');
         if (res.ok) {
-            doctors = await res.json();
-            renderDoctors('all');
-            populateDoctorSelect();
+            const data = await res.json();
+            // Map the backend's snake_case to the frontend's camelCase
+            doctors = data.map(doc => ({
+                ...doc,
+                specialtyName: doc.specialty_name || doc.specialtyName
+            }));
+        } else {
+            console.warn("Backend /api/doctors returned an error, using fallback data.");
+            doctors = fallbackDoctors;
         }
     } catch (err) {
-        console.error('Failed to fetch doctors:', err);
+        console.warn('Failed to fetch doctors (server might not be running). Using fallback data.', err);
+        doctors = fallbackDoctors;
     }
+    
+    renderDoctors('all');
+    populateDoctorSelect();
     
     // Filter buttons
     const filterBtns = document.querySelectorAll('.filter-btn');

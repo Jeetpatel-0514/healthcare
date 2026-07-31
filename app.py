@@ -8,7 +8,7 @@ import openpyxl
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-
+...
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,9 +36,22 @@ def init_db():
             id SERIAL PRIMARY KEY,
             username TEXT,
             email TEXT UNIQUE,
-            password TEXT
+            password TEXT,
+            age INTEGER,
+            gender TEXT,
+            blood_group TEXT,
+            phone TEXT,
+            address TEXT,
+            medical_history TEXT
         )
     ''')
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS blood_group TEXT;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS medical_history TEXT;")
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS appointments (
             id SERIAL PRIMARY KEY,
@@ -50,10 +63,15 @@ def init_db():
             date TEXT,
             time TEXT,
             reason TEXT,
+            status TEXT DEFAULT 'Pending',
+            cancel_reason TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     ''')
+    cur.execute("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Pending';")
+    cur.execute("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS cancel_reason TEXT;")
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS health_data (
             id SERIAL PRIMARY KEY,
@@ -77,24 +95,32 @@ def init_db():
             clinic TEXT,
             rating REAL,
             experience TEXT,
-            image TEXT
+            image TEXT,
+            email TEXT UNIQUE,
+            password TEXT
         )
     ''')
+    cur.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS email TEXT UNIQUE;")
+    cur.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS password TEXT;")
     
     # Seed doctors if table is empty
     cur.execute('SELECT COUNT(*) as count FROM doctors')
     if cur.fetchone()['count'] == 0:
+        default_pw = generate_password_hash('password123')
         docs = [
-            ("Dr. Dhaval Pandya", "general", "General Physician", "Impulse Hospital & ICU", 4.9, "18 years", "dr.dhaval.webp"),
-            ("Dr. Gopal Shah", "cardiology", "Cardiology", "Heart Care Hospital", 4.9, "20 years", "male_doctor.png"),
-            ("Dr. Apoorva Shah", "pediatrics", "Pediatrics", "Children's Health Clinic", 4.7, "12 years", "male_doctor.png"),
-            ("Dr. Dipak Patel", "dermatology", "Dermatology", "Skin Care Institute", 4.6, "10 years", "male_doctor.png"),
-            ("Dr. Rajnikant Dave", "general", "General Physician", "Community Health Center", 4.8, "18 years", "male_doctor.png"),
-            ("Dr. Payal Joshi", "cardiology", "Cardiology", "Advanced Cardiac Care", 4.9, "25 years", "female_doctor.png"),
-            ("Dr. Kavita Patel", "pediatrics", "Pediatrics", "Kids First Medical", 4.8, "14 years", "female_doctor.png"),
-            ("Dr. Rajesh Patel", "dermatology", "Dermatology", "Derma Wellness Center", 4.7, "16 years", "male_doctor.png")
+            ("Dr. Dhaval Pandya", "general", "General Physician", "Impulse Hospital & ICU", 4.9, "18 years", "dr.dhaval.webp", "dhaval@example.com", default_pw),
+            ("Dr. Gopal Shah", "cardiology", "Cardiology", "Heart Care Hospital", 4.9, "20 years", "male_doctor.png", "gopal@example.com", default_pw),
+            ("Dr. Apoorva Shah", "pediatrics", "Pediatrics", "Children's Health Clinic", 4.7, "12 years", "male_doctor.png", "apoorva@example.com", default_pw),
+            ("Dr. Dipak Patel", "dermatology", "Dermatology", "Skin Care Institute", 4.6, "10 years", "male_doctor.png", "dipak@example.com", default_pw),
+            ("Dr. Rajnikant Dave", "general", "General Physician", "Community Health Center", 4.8, "18 years", "male_doctor.png", "rajnikant@example.com", default_pw),
+            ("Dr. Payal Joshi", "cardiology", "Cardiology", "Advanced Cardiac Care", 4.9, "25 years", "female_doctor.png", "payal@example.com", default_pw),
+            ("Dr. Kavita Patel", "pediatrics", "Pediatrics", "Kids First Medical", 4.8, "14 years", "female_doctor.png", "kavita@example.com", default_pw),
+            ("Dr. Rajesh Patel", "dermatology", "Dermatology", "Derma Wellness Center", 4.7, "16 years", "male_doctor.png", "rajesh@example.com", default_pw)
         ]
-        cur.executemany('INSERT INTO doctors (name, specialty, specialty_name, clinic, rating, experience, image) VALUES (%s, %s, %s, %s, %s, %s, %s)', docs)
+        cur.executemany('INSERT INTO doctors (name, specialty, specialty_name, clinic, rating, experience, image, email, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', docs)
+    else:
+        # Give existing doctors a default password if missing
+        cur.execute("UPDATE doctors SET email = REPLACE(LOWER(name), ' ', '') || '@example.com', password = %s WHERE email IS NULL", (generate_password_hash('password123'),))
     
     conn.commit()
     cur.close()
@@ -109,7 +135,7 @@ def export_to_excel():
     try:
         cur.execute('SELECT id, username, email FROM users ORDER BY id')
         users = cur.fetchall()
-        cur.execute('SELECT id, user_id, patient_name, email, phone, doctor, date, time, reason, created_at FROM appointments ORDER BY created_at DESC')
+        cur.execute('SELECT id, user_id, patient_name, email, phone, doctor, date, time, reason, status, cancel_reason, created_at FROM appointments ORDER BY created_at DESC')
         appts = cur.fetchall()
         cur.execute('SELECT id, user_id, temperature, bp_sys, bp_dia, heart_rate, blood_sugar, oxygen_level, created_at FROM health_data ORDER BY created_at DESC')
         health = cur.fetchall()
@@ -139,11 +165,11 @@ def export_to_excel():
     if 'appointments' in wb.sheetnames:
         del wb['appointments']
     ws2 = wb.create_sheet('appointments')
-    ws2.append(['id', 'user_id', 'patient_name', 'email', 'phone', 'doctor', 'date', 'time', 'reason', 'created_at'])
+    ws2.append(['id', 'user_id', 'patient_name', 'email', 'phone', 'doctor', 'date', 'time', 'reason', 'status', 'cancel_reason', 'created_at'])
     for a in appts:
         # created_at might be datetime object from psycopg2, convert to string
         created_at_str = str(a['created_at']) if a['created_at'] else ''
-        ws2.append([a['id'], a['user_id'], a['patient_name'], a['email'], a['phone'], a['doctor'], a['date'], a['time'], a['reason'], created_at_str])
+        ws2.append([a['id'], a['user_id'], a['patient_name'], a['email'], a['phone'], a['doctor'], a['date'], a['time'], a['reason'], a['status'], a['cancel_reason'], created_at_str])
 
     # Replace or create health_data sheet
     if 'health_data' in wb.sheetnames:
@@ -180,7 +206,7 @@ def export_csvs():
     try:
         cur.execute('SELECT id, username, email FROM users ORDER BY id')
         users = cur.fetchall()
-        cur.execute('SELECT id, user_id, patient_name, email, phone, doctor, date, time, reason, created_at FROM appointments ORDER BY created_at DESC')
+        cur.execute('SELECT id, user_id, patient_name, email, phone, doctor, date, time, reason, status, cancel_reason, created_at FROM appointments ORDER BY created_at DESC')
         appts = cur.fetchall()
         cur.execute('SELECT id, user_id, temperature, bp_sys, bp_dia, heart_rate, blood_sugar, oxygen_level, created_at FROM health_data ORDER BY created_at DESC')
         health = cur.fetchall()
@@ -200,10 +226,10 @@ def export_csvs():
 
     with open(appts_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['id', 'user_id', 'patient_name', 'email', 'phone', 'doctor', 'date', 'time', 'reason', 'created_at'])
+        writer.writerow(['id', 'user_id', 'patient_name', 'email', 'phone', 'doctor', 'date', 'time', 'reason', 'status', 'cancel_reason', 'created_at'])
         for a in appts:
             created_at_str = str(a['created_at']) if a['created_at'] else ''
-            writer.writerow([a['id'], a['user_id'], a['patient_name'], a['email'], a['phone'], a['doctor'], a['date'], a['time'], a['reason'], created_at_str])
+            writer.writerow([a['id'], a['user_id'], a['patient_name'], a['email'], a['phone'], a['doctor'], a['date'], a['time'], a['reason'], a['status'], a['cancel_reason'], created_at_str])
 
     with open(health_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
@@ -303,13 +329,43 @@ def me():
         return jsonify({'error': 'Not authenticated'}), 401
     conn = get_db()
     cur = conn.cursor()
-    cur.execute('SELECT id, username, email FROM users WHERE id = %s', (user_id,))
+    cur.execute('SELECT id, username, email, age, gender, blood_group, phone, address, medical_history FROM users WHERE id = %s', (user_id,))
     row = cur.fetchone()
     cur.close()
     conn.close()
     if not row:
         return jsonify({'error': 'User not found'}), 404
-    return jsonify({'id': row['id'], 'username': row['username'], 'email': row['email']})
+    return jsonify(dict(row))
+
+@app.route('/api/user/profile', methods=['PUT'])
+def update_profile():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+        
+    data = request.get_json() or {}
+    age = data.get('age')
+    gender = data.get('gender')
+    blood_group = data.get('blood_group')
+    phone = data.get('phone')
+    address = data.get('address')
+    medical_history = data.get('medical_history')
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('''
+            UPDATE users 
+            SET age = %s, gender = %s, blood_group = %s, phone = %s, address = %s, medical_history = %s
+            WHERE id = %s
+        ''', (age, gender, blood_group, phone, address, medical_history, user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        print(f"Profile update error: {e}")
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -544,6 +600,238 @@ Keep your responses concise and well-formatted."""
     except Exception as e:
         print(f"Chat error: {e}")
         return jsonify({'error': 'Failed to process chat message'}), 500
+
+@app.route('/api/doctor/signup', methods=['POST'])
+def doctor_signup():
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    password = data.get('password')
+    specialty = (data.get('specialty') or '').strip()
+    clinic = (data.get('clinic') or '').strip()
+    experience = (data.get('experience') or '').strip()
+    
+    if not name or not email or not password or not specialty or not clinic or not experience:
+        return jsonify({'error': 'All fields are required'}), 400
+        
+    specialty_map = {
+        'general': 'General Physician',
+        'cardiology': 'Cardiology',
+        'pediatrics': 'Pediatrics',
+        'dermatology': 'Dermatology'
+    }
+    specialty_name = specialty_map.get(specialty.lower(), 'General Physician')
+    hashed_password = generate_password_hash(password)
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        # Check if email or name exists
+        cur.execute('SELECT id FROM doctors WHERE email = %s OR name = %s', (email, name))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Doctor with this email or name already exists'}), 409
+            
+        cur.execute(
+            '''INSERT INTO doctors (name, email, password, specialty, specialty_name, clinic, experience, rating, image)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id''',
+            (name, email, hashed_password, specialty, specialty_name, clinic, experience, 5.0, 'male_doctor.png')
+        )
+        doc_id = cur.fetchone()['id']
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        # Log them in automatically
+        session['doctor_id'] = doc_id
+        session['doctor_name'] = name
+        
+        return jsonify({
+            'id': doc_id,
+            'name': name,
+            'email': email
+        }), 201
+    except Exception as e:
+        print(f"Signup error: {e}")
+        return jsonify({'error': 'Server error'}), 500
+
+@app.route('/api/doctor/login', methods=['POST'])
+def doctor_login():
+    data = request.get_json() or {}
+    email = (data.get('email') or '').strip()
+    password = data.get('password')
+    
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+        
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT id, name, email, password FROM doctors WHERE email = %s', (email,))
+        doc = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if doc and check_password_hash(doc['password'], password):
+            session['doctor_id'] = doc['id']
+            session['doctor_name'] = doc['name']
+            return jsonify({
+                'id': doc['id'],
+                'name': doc['name'],
+                'email': doc['email']
+            }), 200
+        else:
+            return jsonify({'error': 'Invalid credentials'}), 401
+    except Exception as e:
+        return jsonify({'error': 'Server error'}), 500
+
+@app.route('/api/doctor/me', methods=['GET'])
+def doctor_me():
+    doctor_id = session.get('doctor_id')
+    if not doctor_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT id, name, email, specialty_name, clinic FROM doctors WHERE id = %s', (doctor_id,))
+        doc = cur.fetchone()
+        cur.close()
+        conn.close()
+        if doc:
+            return jsonify(dict(doc))
+        return jsonify({'error': 'Doctor not found'}), 404
+    except Exception:
+        return jsonify({'error': 'Server error'}), 500
+
+@app.route('/api/doctor/logout', methods=['POST'])
+def doctor_logout():
+    session.pop('doctor_id', None)
+    session.pop('doctor_name', None)
+    return jsonify({'ok': True}), 200
+
+@app.route('/api/doctor/appointments', methods=['GET'])
+def doctor_appointments():
+    doctor_id = session.get('doctor_id')
+    if not doctor_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        # Find the doctor's name to match in the appointments table
+        cur.execute('SELECT name FROM doctors WHERE id = %s', (doctor_id,))
+        doc = cur.fetchone()
+        if not doc:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Doctor not found'}), 404
+            
+        doctor_name = doc['name']
+        cur.execute('SELECT id, user_id, patient_name, email, phone, date, time, reason, status, cancel_reason, created_at FROM appointments WHERE doctor = %s ORDER BY created_at DESC', (doctor_name,))
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        res = []
+        for r in rows:
+            d = dict(r)
+            d['created_at'] = str(d['created_at'])
+            res.append(d)
+        return jsonify(res)
+    except Exception as e:
+        print(f"Doctor appointments error: {e}")
+        return jsonify({'error': 'Server error'}), 500
+
+@app.route('/api/doctor/appointments/<int:appt_id>/status', methods=['PUT'])
+def update_appointment_status(appt_id):
+    doctor_id = session.get('doctor_id')
+    if not doctor_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+        
+    data = request.get_json() or {}
+    new_status = data.get('status')
+    if not new_status:
+        return jsonify({'error': 'Status is required'}), 400
+        
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        # Verify the appointment belongs to this doctor
+        cur.execute('SELECT doctor FROM appointments WHERE id = %s', (appt_id,))
+        appt = cur.fetchone()
+        if not appt:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Appointment not found'}), 404
+            
+        cur.execute('SELECT name FROM doctors WHERE id = %s', (doctor_id,))
+        doc = cur.fetchone()
+        if not doc or doc['name'] != appt['doctor']:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        cancel_reason = data.get('cancel_reason')
+        if new_status == 'Cancelled' and cancel_reason:
+            cur.execute('UPDATE appointments SET status = %s, cancel_reason = %s WHERE id = %s', (new_status, cancel_reason, appt_id))
+        else:
+            cur.execute('UPDATE appointments SET status = %s WHERE id = %s', (new_status, appt_id))
+            
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'ok': True, 'status': new_status})
+    except Exception as e:
+        return jsonify({'error': 'Server error'}), 500
+
+@app.route('/api/doctor/patient/<int:user_id>', methods=['GET'])
+def get_patient_report(user_id):
+    doctor_id = session.get('doctor_id')
+    if not doctor_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+        
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        # Verify doctor is allowed to see this user (i.e. user booked an appointment with them)
+        cur.execute('SELECT name FROM doctors WHERE id = %s', (doctor_id,))
+        doc = cur.fetchone()
+        if not doc:
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        cur.execute('SELECT 1 FROM appointments WHERE doctor = %s AND user_id = %s LIMIT 1', (doc['name'], user_id))
+        if not cur.fetchone():
+            return jsonify({'error': 'Unauthorized to view this patient'}), 403
+            
+        # Fetch user profile
+        cur.execute('SELECT username, email, age, gender, blood_group, phone, address, medical_history FROM users WHERE id = %s', (user_id,))
+        profile = cur.fetchone()
+        if not profile:
+            return jsonify({'error': 'Patient not found'}), 404
+            
+        # Fetch health data history
+        cur.execute('SELECT temperature, bp_sys, bp_dia, heart_rate, blood_sugar, oxygen_level, created_at FROM health_data WHERE user_id = %s ORDER BY created_at ASC', (user_id,))
+        health_rows = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        
+        health_data = []
+        for r in health_rows:
+            d = dict(r)
+            d['created_at'] = str(d['created_at'])
+            health_data.append(d)
+            
+        return jsonify({
+            'profile': dict(profile),
+            'health_data': health_data
+        }), 200
+    except Exception as e:
+        print(f"Report error: {e}")
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
