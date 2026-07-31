@@ -6,6 +6,19 @@
     <title>My Appointments - Smart Healthcare</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .status-Pending { background: #fff3cd; color: #856404; }
+        .status-Confirmed { background: #d4edda; color: #155724; }
+        .status-Cancelled { background: #f8d7da; color: #721c24; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -83,6 +96,12 @@
                         <p><strong>Email:</strong> ${a.email}</p>
                         <p><strong>Phone:</strong> ${a.phone || '—'}</p>
                         <p><strong>Reason:</strong> ${a.reason || '—'}</p>
+                        <p><span class="status-badge status-${a.status || 'Pending'}">Status: ${a.status || 'Pending'}</span></p>
+                        ${(a.status === 'Cancelled' && a.cancel_reason) ? `
+                            <div style="margin-top: 10px; font-size: 0.9rem; color: #721c24; background: #f8d7da; padding: 8px; border-radius: 6px;">
+                                <strong>Doctor's Reason:</strong> ${a.cancel_reason}
+                            </div>
+                        ` : ''}
                     </div>
                     <div class="appointment-footer">
                         <small>Booked on ${a.created_at}</small>

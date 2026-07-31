@@ -431,7 +431,7 @@ def list_appointments():
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute('SELECT id, patient_name, email, phone, doctor, date, time, reason, created_at FROM appointments WHERE user_id = %s ORDER BY created_at DESC', (user_id,))
+        cur.execute('SELECT id, patient_name, email, phone, doctor, date, time, reason, status, cancel_reason, created_at FROM appointments WHERE user_id = %s ORDER BY created_at DESC', (user_id,))
         rows = cur.fetchall()
         cur.close()
         conn.close()
